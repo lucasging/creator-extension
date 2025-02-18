@@ -25,7 +25,7 @@
         }
     ],
     "web_accessible_resources": [{
-        "resources": ["check.png", "x.png", "profiles.json"],
+        "resources": ["assets/check.png", "assets/x.png", "profiles.json"],
         "matches": ["https://*.instagram.com/*"]
     }]
 }
