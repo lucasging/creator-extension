@@ -1,0 +1,31 @@
+{
+    "name": "Creator Helper",
+    "permissions": [
+        "tabs",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://*.instagram.com/*"
+    ],
+    "version": "1.0.0",
+    "description": "Helper for creator profiles",
+    "manifest_version": 3,
+    "author": "Sampurna Chapagain",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://*.instagram.com/*"],
+            "js": ["instagram.js"]
+        },
+        {
+            "matches": ["https://*.creator.co/creator-search"],
+            "js": ["creator.js"]
+        }
+    ],
+    "web_accessible_resources": [{
+        "resources": ["check.png", "x.png", "profiles.json"],
+        "matches": ["https://*.instagram.com/*"]
+    }]
+}
