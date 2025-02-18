@@ -1,5 +1,5 @@
 {
-    "name": "Creator Helper",
+    "name": "Creator Recruitment Tool",
     "permissions": [
         "tabs",
         "storage"
@@ -7,10 +7,10 @@
     "host_permissions": [
         "https://*.instagram.com/*"
     ],
-    "version": "1.0.0",
-    "description": "Helper for creator profiles",
+    "version": "1.0",
+    "description": "Speeds up recruitment using the Creator.co platform.",
     "manifest_version": 3,
-    "author": "Sampurna Chapagain",
+    "author": "Lucas Gingera",
     "background": {
         "service_worker": "background.js"
     },
