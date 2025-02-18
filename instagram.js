@@ -5,8 +5,8 @@ function initializePanel() {
     const panel = document.createElement('div');
 
     // Get extension URL for images
-    const checkImageUrl = chrome.runtime.getURL('check.png');
-    const xImageUrl = chrome.runtime.getURL('x.png');
+    const checkImageUrl = chrome.runtime.getURL('assets/check.png');
+    const xImageUrl = chrome.runtime.getURL('assets/x.png');
 
     panel.innerHTML = `
         <div id="creator-panel" style="
@@ -108,10 +108,11 @@ function initializePanel() {
                 }
                 console.log('Initial state:', { index, profiles });
 
-                setupEventListeners();
 
                 if (!profiles.includes(document.URL.slice(0, -6))) {
                     document.body.removeChild(panel);
+                } else {
+                    setupEventListeners();
                 }
 
             } else {
