@@ -8,18 +8,78 @@ function initializePanel() {
     const checkImageUrl = chrome.runtime.getURL('assets/check.png');
     const xImageUrl = chrome.runtime.getURL('assets/x.png');
 
-    panel.innerHTML = `
+    const igPanel = `
+    <div id="creator-panel" style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 150px;
+        background: white;
+        border: 2px solid #ccc;
+        border-radius: 12px;
+        padding: 20px;
+        z-index: 999999;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    ">
+        <div class="buttons-container" style="
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        ">
+            <button id="check-button" class="button" style="
+                border: none;
+                padding: 15px;
+                cursor: pointer;
+                background: #f8f8f8;
+                border-radius: 8px;
+            ">
+                <img src="${checkImageUrl}" width="40"/>
+            </button>
+            <button id="x-button" class="button" style="
+                border: none;
+                padding: 15px;
+                cursor: pointer;
+                background: #f8f8f8;
+                border-radius: 8px;
+            ">
+                <img src="${xImageUrl}" width="40"/>
+            </button>
+        </div>
+        <div class="completion-message" style="
+            display: none;
+            text-align: center;
+            padding: 5px;
+            font-size: 14px;
+        "></div>
+        <div class="link-text" style="
+            text-align: center;
+            padding: 5px;
+            margin-top: 5px;
+        ">
+            <a href="#" id="external-link" style="
+                text-decoration: underline;
+                color: blue;
+                font-size: 12px;
+            ">Finish</a>
+        </div>
+    </div>
+    `
+
+    const ttPanel = `
         <div id="creator-panel" style="
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 150px;
+            width: 200px;
+            height: 150px;
             background: white;
             border: 2px solid #ccc;
             border-radius: 12px;
             padding: 20px;
             z-index: 999999;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-sizing: border-box;
         ">
             <div class="buttons-container" style="
                 display: flex;
@@ -66,6 +126,12 @@ function initializePanel() {
         </div>
     `;
 
+    if (document.URL.includes('instagram.com')) {
+        panel.innerHTML = igPanel;
+    } else if (document.URL.includes('tiktok.com')) {
+        panel.innerHTML = ttPanel;
+    }
+
     // First add panel to page
     document.body.appendChild(panel);
     console.log('Panel added to page');
@@ -108,8 +174,7 @@ function initializePanel() {
                 }
                 console.log('Initial state:', { index, profiles });
 
-
-                if (!profiles.includes(document.URL.slice(0, -6))) {
+                if (!profiles.includes(document.URL) && !profiles.includes(document.URL.replace("www.", ""))) {
                     document.body.removeChild(panel);
                 } else {
                     setupEventListeners();
@@ -151,7 +216,7 @@ function initializePanel() {
                         // Navigate after state is saved
                         if (index < profiles.length) {
                             console.log('Moving to profile:', profiles[index]);
-                            window.location.href = profiles[index] + "reels/"; // Navigate to the next profile
+                            window.location.href = profiles[index]; // Navigate to the next profile
                         } else {
                             const selectedCount = currentResponses.filter(response => response === true).length;
                             buttonsContainer.style.display = 'none';

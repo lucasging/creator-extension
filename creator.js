@@ -1,12 +1,12 @@
+let searchResultsFound = false; // Variable to track if the search results div is found
+
 function addButtonToSearchResults() {
     const searchResultsDiv = document.querySelector('.search-results');
 
     if (searchResultsDiv) {
-        console.log('Found search-results element:', searchResultsDiv);
-        
         // Find the header inside search-results
         const header = searchResultsDiv.querySelector('.header');
-        if (header) {
+        if (header && header.children.length==4) {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'ant-btn ant-btn-primary';
@@ -30,12 +30,12 @@ function addButtonToSearchResults() {
                     responses: []
                 });
 
-                const links = getInstagramLinks();
-                console.log('Found Instagram links:', links);
+                const links = getLinks();
+                console.log('Found links:', links);
                 uploadLinksToProfiles(links);
                 const firstProfileUrl = links[0]; // Get the first profile URL
                 // Open the first profile in a new tab
-                chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl + "reels/" }, (response) => {
+                chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
                     if (response.success) {
                         console.log('Profile opened in a new tab:', response.tabId);
                     } else {
@@ -47,22 +47,7 @@ function addButtonToSearchResults() {
             button2.addEventListener('click', () => {
                 retrieveResponses();
             })
-        } else {
-            console.log('Header not found inside search-results');
         }
-    } else {
-        console.log('Search results div not found, waiting for it to load...');
-
-        // Use MutationObserver to detect when search-results appears
-        const observer = new MutationObserver((mutations, obs) => {
-            const newSearchResultsDiv = document.querySelector('.search-results');
-            if (newSearchResultsDiv) {
-                obs.disconnect(); // Stop observing
-                addButtonToSearchResults(); // Retry function now that it's loaded
-            }
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
     }
 }
 
@@ -83,14 +68,16 @@ function retrieveResponses() {
     });
 }
 
-function getInstagramLinks() {
+function getLinks() {
     // Get all anchor tags on the page
-    const links = document.querySelectorAll('a[href*="instagram.com"]');
+    const iglinks = document.querySelectorAll('a[href*="instagram.com"]');
+    const ttlinks = document.querySelectorAll('a[href*="tiktok.com"]');
     
     // Extract href attributes
-    const instagramLinks = Array.from(links).map(link => link.href);
+    const instagramLinks = Array.from(iglinks).map(link => link.href + (link.href.endsWith('/') ? 'reels/' : '/reels/'));
+    const ttLinks = Array.from(ttlinks).map(link => link.href);
 
-    return instagramLinks;
+    return instagramLinks.length ? instagramLinks : ttLinks;
 }
 
 // Function to upload links to profiles.json format
@@ -104,20 +91,42 @@ function uploadLinksToProfiles(links) {
 }
 
 function checkBoxes(whichBoxes) {
-    console.log("hi");
     var checkboxes = document.querySelectorAll('input[type="checkbox"]');
     console.log("checkboxes:", checkboxes);
+
+    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
+        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
+        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
+        !checkbox.matches('input#registered.ant-checkbox-input')
+    );
+
+    console.log("checkboxes after:", filteredCheckboxes);
+
     var startIndex = 1;
     for (var i = startIndex; i < whichBoxes.length+1; i++) {
         if (whichBoxes[i-1]) {
-            if (!checkboxes[i].checked) {
-                checkboxes[i].click();
+            if (!filteredCheckboxes[i].checked) {
+                filteredCheckboxes[i].click();
             }
         }
     }
 }
 
+function checkForSearchResults() {
+    setInterval(() => {
+        addButtonToSearchResults(); // This function is called every 3 seconds
+    }, 3000); // Check every 3 seconds
+}
+
+window.addEventListener('popstate', () => {
+    // URL has changed, trigger addButtonToSearchResults again
+    addButtonToSearchResults();
+});
+
+
 window.addEventListener('load', () => {
     console.log('Page fully loaded');
     addButtonToSearchResults();
 });
+
+checkForSearchResults();

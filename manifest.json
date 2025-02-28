@@ -2,11 +2,18 @@
     "name": "Creator Recruitment Tool",
     "permissions": [
         "tabs",
-        "storage"
+        "storage",
+        "activeTab",
+        "scripting",
+        "webNavigation"
     ],
     "host_permissions": [
-        "https://*.instagram.com/*"
+        "https://*.instagram.com/*",
+        "https://*.tiktok.com/*"
     ],
+    "action": {
+        "default_popup": "popup.html"
+    },
     "version": "1.0",
     "description": "Speeds up recruitment using the Creator.co platform.",
     "manifest_version": 3,
@@ -16,16 +23,16 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://*.instagram.com/*"],
-            "js": ["instagram.js"]
+            "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*"],
+            "js": ["panel.js"]
         },
         {
-            "matches": ["https://*.creator.co/creator-search"],
+            "matches": ["https://*.creator.co/*"],
             "js": ["creator.js"]
         }
     ],
     "web_accessible_resources": [{
-        "resources": ["assets/check.png", "assets/x.png", "profiles.json"],
-        "matches": ["https://*.instagram.com/*"]
+        "resources": ["assets/*"],
+        "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*"]
     }]
 }

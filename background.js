@@ -12,3 +12,12 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         chrome.tabs.remove(sender.tab.id);
     }
 });
+
+chrome.webNavigation.onCompleted.addListener(function(details) {
+    if (details.url.match('https://*.creator.co/')) {
+        chrome.scripting.executeScript({
+            target: { tabId: details.tabId },
+            files: ['creator.js']  // Manually inject creator.js again on page load
+        });
+    }
+}, { url: [{ hostContains: 'creator.co' }] });
