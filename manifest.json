@@ -11,9 +11,6 @@
         "https://*.instagram.com/*",
         "https://*.tiktok.com/*"
     ],
-    "action": {
-        "default_popup": "popup.html"
-    },
     "version": "1.0",
     "description": "Speeds up recruitment using the Creator.co platform.",
     "manifest_version": 3,
