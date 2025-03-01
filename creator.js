@@ -25,22 +25,47 @@ function addButtonToSearchResults() {
 
             button.addEventListener('click', () => {
 
-                chrome.storage.local.set({ 
-                    currentIndex: 0,
-                    responses: []
-                });
 
-                const links = getLinks();
+                var links = getLinks();
                 console.log('Found links:', links);
-                uploadLinksToProfiles(links);
-                const firstProfileUrl = links[0]; // Get the first profile URL
-                // Open the first profile in a new tab
-                chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
-                    if (response.success) {
-                        console.log('Profile opened in a new tab:', response.tabId);
-                    } else {
-                        console.error('Failed to open profile.');
+
+                chrome.storage.local.get(["currentIndex", "profiles"], (data) => {
+                    const currentIndex = data.currentIndex || 0;
+                    const profiles = data.profiles.profiles;
+                    
+                    var sameList = true;
+                    for (var i = 0; i < 5; i++) {
+                        console.log(i, profiles[i], links[i]);
+                        if (profiles[i] != links[i]) {
+                            sameList = false;
+                        }
                     }
+
+                    var index = 0;
+                    if (sameList) {
+                        index = currentIndex;
+                        var responses = new Array(currentIndex).fill(false);
+                    } else {
+                        var responses = []
+                    }
+
+                    chrome.storage.local.set({ 
+                        currentIndex: index,
+                        responses: responses
+                    });
+
+
+                    uploadLinksToProfiles(links, sameList);
+                    const firstProfileUrl = links[index]; // Get the first profile URL
+
+                    // Open the first profile in a new tab
+                    chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
+                        if (response.success) {
+                            console.log('Profile opened in a new tab:', response.tabId);
+                        } else {
+                            console.error('Failed to open profile.');
+                        }
+                    });
                 });
             });
 
@@ -81,11 +106,11 @@ function getLinks() {
 }
 
 // Function to upload links to profiles.json format
-function uploadLinksToProfiles(links) {
+function uploadLinksToProfiles(links, continued) {
     const profilesObject = { profiles: links };
 
     // Save to chrome.storage.local
-    chrome.storage.local.set({ profiles: profilesObject, newListAdded: true }, () => {
+    chrome.storage.local.set({ profiles: profilesObject, continuedList: continued, newListAdded: true }, () => {
         console.log('Profiles saved to storage:', profilesObject);
     });
 }

@@ -142,15 +142,15 @@ function initializePanel() {
     let responses = [];
 
     // Load saved state first
-    chrome.storage.local.get(['currentIndex', 'responses', 'newListAdded'], (result) => {
+    chrome.storage.local.get(['currentIndex', 'responses', 'newListAdded', 'continuedList'], (result) => {
         let index = result.currentIndex || 0;
         let responses = result.responses || [];
         const newListAdded = result.newListAdded || false; // Get the newListAdded flag
+        const continuedList = result.continuedList || false; // Get the newListAdded flag
         console.log('Loaded saved state:', { index, responses, newListAdded });
 
         // Check if a new list was added
-        if (newListAdded) {
-            console.log("hi");
+        if (newListAdded && !continuedList) {
             index = 0; // Reset current index to 0
             chrome.storage.local.set({ 
                 currentIndex: index
@@ -158,6 +158,11 @@ function initializePanel() {
             responses = new Array(profiles.length).fill(null); // Reset responses array
             console.log('New list added. Current index reset to 0 and responses cleared.');
 
+            // Reset the newListAdded flag
+            chrome.storage.local.set({ newListAdded: false }, () => {
+                console.log('New list added flag reset to false.');
+            });
+        } else if (continuedList) {
             // Reset the newListAdded flag
             chrome.storage.local.set({ newListAdded: false }, () => {
                 console.log('New list added flag reset to false.');
