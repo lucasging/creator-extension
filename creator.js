@@ -29,7 +29,7 @@ function addButtonToSearchResults() {
                 var links = getLinks();
                 console.log('Found links:', links);
 
-                chrome.storage.local.get(["currentIndex", "profiles"], (data) => {
+                chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
                     const currentIndex = data.currentIndex || 0;
                     const profiles = data.profiles.profiles;
                     
@@ -44,7 +44,7 @@ function addButtonToSearchResults() {
                     var index = 0;
                     if (sameList) {
                         index = currentIndex;
-                        var responses = new Array(currentIndex).fill(false);
+                        var responses = data.responses || [];
                     } else {
                         var responses = []
                     }
