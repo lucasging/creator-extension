@@ -24,36 +24,42 @@ function addButtonToSearchResults() {
             header.appendChild(button2);
 
             button.addEventListener('click', () => {
-
-
                 var links = getLinks();
                 console.log('Found links:', links);
 
                 chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
                     const currentIndex = data.currentIndex || 0;
-                    const profiles = data.profiles.profiles;
-                    
-                    var sameList = true;
-                    for (var i = 0; i < 5; i++) {
-                        console.log(i, profiles[i], links[i]);
-                        if (profiles[i] != links[i]) {
-                            sameList = false;
-                        }
-                    }
-
-                    var index = 0;
-                    if (sameList) {
-                        index = currentIndex;
-                        var responses = data.responses || [];
+                    // Add error handling for undefined profiles
+                    if (!data.profiles) {
+                        console.log('No existing profiles found, creating new list');
+                        var sameList = false;
+                        var responses = [];
+                        var index = 0;
                     } else {
-                        var responses = []
+                        const profiles = data.profiles.profiles;
+                        
+                        var sameList = true;
+                        for (var i = 0; i < 5; i++) {
+                            console.log(i, profiles[i], links[i]);
+                            if (profiles[i] != links[i]) {
+                                sameList = false;
+                            }
+                        }
+
+                        var index = 0;
+                        if (sameList) {
+                            index = currentIndex;
+                            var responses = data.responses || [];
+                        } else {
+                            var responses = [];
+                        }
                     }
 
                     chrome.storage.local.set({ 
                         currentIndex: index,
+                        profiles: { profiles: links }, // Ensure profiles is properly structured
                         responses: responses
                     });
-
 
                     uploadLinksToProfiles(links, sameList);
                     const firstProfileUrl = links[index]; // Get the first profile URL
