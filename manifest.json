@@ -12,7 +12,19 @@
         "https://*.tiktok.com/*"
     ],
     "version": "1.2",
-    "description": "Speeds up recruitment for the Creator.co platform.",
+    "description": "Speeds up influencer recruitment for the Creator.co search tool.",
+    "icons": {
+        "16": "assets/creator16.png",
+        "48": "assets/creator48.png",
+        "128": "assets/creator128.png"
+    },
+    "action": {
+        "default_icon": {
+            "16": "assets/creator16.png",
+            "48": "assets/creator48.png",
+            "128": "assets/creator128.png"
+        }
+    },
     "manifest_version": 3,
     "author": "Lucas Gingera",
     "background": {
