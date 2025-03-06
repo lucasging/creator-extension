@@ -5,12 +5,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true; // Keep the message channel open for sendResponse
     }
-}); 
-
-chrome.runtime.onMessage.addListener((message, sender) => {
-    if (message.action === "closeTab" && sender.tab) {
-        chrome.tabs.remove(sender.tab.id);
-    }
 });
 
 chrome.webNavigation.onCompleted.addListener(function(details) {

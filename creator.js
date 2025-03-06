@@ -55,23 +55,27 @@ function addButtonToSearchResults() {
                         }
                     }
 
-                    chrome.storage.local.set({ 
-                        currentIndex: index,
-                        profiles: { profiles: links }, // Ensure profiles is properly structured
-                        responses: responses
-                    });
-
-                    uploadLinksToProfiles(links, sameList);
-                    const firstProfileUrl = links[index]; // Get the first profile URL
-
-                    // Open the first profile in a new tab
-                    chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
-                        if (response.success) {
-                            console.log('Profile opened in a new tab:', response.tabId);
-                        } else {
-                            console.error('Failed to open profile.');
-                        }
-                    });
+                    if (index >= links.length) {
+                        alert("Click load more until you get back to where you were!")
+                    } else {
+                        chrome.storage.local.set({ 
+                            currentIndex: index,
+                            profiles: { profiles: links }, // Ensure profiles is properly structured
+                            responses: responses
+                        });
+    
+                        uploadLinksToProfiles(links, sameList);
+                        const firstProfileUrl = links[index]; // Get the first profile URL
+    
+                        // Open the first profile in a new tab
+                        chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
+                            if (response.success) {
+                                console.log('Profile opened in a new tab:', response.tabId);
+                            } else {
+                                console.error('Failed to open profile.');
+                            }
+                        });
+                    }
                 });
             });
 

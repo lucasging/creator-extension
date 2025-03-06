@@ -11,8 +11,8 @@
         "https://*.instagram.com/*",
         "https://*.tiktok.com/*"
     ],
-    "version": "1.0",
-    "description": "Speeds up recruitment using the Creator.co platform.",
+    "version": "1.2",
+    "description": "Speeds up recruitment for the Creator.co platform.",
     "manifest_version": 3,
     "author": "Lucas Gingera",
     "background": {
