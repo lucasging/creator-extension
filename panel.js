@@ -9,17 +9,20 @@ function initializePanel() {
     const xImageUrl = chrome.runtime.getURL('assets/x.png');
 
     const igPanel = `
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    </head>
     <div id="creator-panel" style="
         position: fixed;
         top: 20px;
         right: 20px;
         width: 150px;
         background: white;
-        border: 2px solid #ccc;
-        border-radius: 12px;
-        padding: 20px;
+        border: 4px solid #F6F6F6;
+        border-radius: 15px;
+        padding: 15px;
         z-index: 999999;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 20px rgba(0,0,0,0.2);
     ">
         <div class="buttons-container" style="
             display: flex;
@@ -31,8 +34,8 @@ function initializePanel() {
                 border: none;
                 padding: 15px;
                 cursor: pointer;
-                background: #f8f8f8;
-                border-radius: 8px;
+                background: #F6F6F6;
+                border-radius: 50%;
             ">
                 <img src="${checkImageUrl}" width="40"/>
             </button>
@@ -40,8 +43,8 @@ function initializePanel() {
                 border: none;
                 padding: 15px;
                 cursor: pointer;
-                background: #f8f8f8;
-                border-radius: 8px;
+                background: #F6F6F6;
+                border-radius: 50%;
             ">
                 <img src="${xImageUrl}" width="40"/>
             </button>
@@ -51,22 +54,23 @@ function initializePanel() {
             text-align: center;
             padding: 5px;
             font-size: 14px;
+            font-family: 'Monteserrat', sans-serif;
         "></div>
-        <div class="link-text" style="
+        <div id="display-text" style="
             text-align: center;
-            padding: 5px;
-            margin-top: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+            font-family: 'Monteserrat', sans-serif;
         ">
-            <a href="#" id="external-link" style="
-                text-decoration: underline;
-                color: blue;
-                font-size: 12px;
-            ">Finish</a>
         </div>
     </div>
     `
 
     const ttPanel = `
+        <head>
+            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        </head>
         <div id="creator-panel" style="
             position: fixed;
             top: 20px;
@@ -74,9 +78,9 @@ function initializePanel() {
             width: 200px;
             height: 150px;
             background: white;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            padding: 20px;
+            border: 4px solid #F6F6F6;
+            border-radius: 15px;
+            padding: 15px;
             z-index: 999999;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             box-sizing: border-box;
@@ -91,8 +95,8 @@ function initializePanel() {
                     border: none;
                     padding: 15px;
                     cursor: pointer;
-                    background: #f8f8f8;
-                    border-radius: 8px;
+                    background: #F6F6F6;
+                    border-radius: 50%;
                 ">
                     <img src="${checkImageUrl}" width="40"/>
                 </button>
@@ -100,8 +104,8 @@ function initializePanel() {
                     border: none;
                     padding: 15px;
                     cursor: pointer;
-                    background: #f8f8f8;
-                    border-radius: 8px;
+                    background: #F6F6F6;
+                    border-radius: 50%;
                 ">
                     <img src="${xImageUrl}" width="40"/>
                 </button>
@@ -111,17 +115,15 @@ function initializePanel() {
                 text-align: center;
                 padding: 5px;
                 font-size: 14px;
+                font-family: 'Monteserrat', sans-serif;
             "></div>
-            <div class="link-text" style="
+            <div id="display-text" style="
                 text-align: center;
-                padding: 5px;
-                margin-top: 5px;
+                margin-top: 10px;
+                font-size: 14px;
+                color: #333;
+                font-family: 'Monteserrat', sans-serif;
             ">
-                <a href="#" id="external-link" style="
-                    text-decoration: underline;
-                    color: blue;
-                    font-size: 12px;
-                ">Finish</a>
             </div>
         </div>
     `;
@@ -137,9 +139,7 @@ function initializePanel() {
     console.log('Panel added to page');
 
     // Then load profiles and set up event listeners
-    let index = 0;
     let profiles = [];
-    let responses = [];
 
     // Load saved state first
     chrome.storage.local.get(['currentIndex', 'responses', 'newListAdded', 'continuedList'], (result) => {
@@ -188,6 +188,7 @@ function initializePanel() {
             } else {
                 console.error('No profiles found in storage.');
             }
+            document.getElementById("display-text").innerHTML = "<b>" + responses.filter(Boolean).length.toString() + " Selected</b>  -  " + index.toString() + "/" + profiles.length.toString();
         });
     });
 
@@ -197,7 +198,6 @@ function initializePanel() {
         const xButton = panel.querySelector('#x-button');
         const buttonsContainer = panel.querySelector('.buttons-container');
         const messageElement = panel.querySelector('.completion-message');
-        const externalLink = panel.querySelector('#external-link');
         
 
         function handleButtonClick(isCheck) {
@@ -225,6 +225,7 @@ function initializePanel() {
                         } else {
                             const selectedCount = currentResponses.filter(response => response === true).length;
                             buttonsContainer.style.display = 'none';
+                            document.getElementById("display-text").innerText = "";
                             messageElement.style.display = 'block';
                             messageElement.textContent = `You selected ${selectedCount} out of ${profiles.length} profiles`;
 
@@ -250,15 +251,6 @@ function initializePanel() {
         checkButton.addEventListener('click', () => handleButtonClick(true));
         xButton.addEventListener('click', () => handleButtonClick(false));
         document.addEventListener("keydown", handleKeyDown);
-
-        if (externalLink) {
-            console.log(externalLink)
-            externalLink.addEventListener('click', (e) => {
-                chrome.runtime.sendMessage({ action: "closeTab" });
-            });
-        } else {
-            console.error('External link not found.');
-        }
     }
 }
 
