@@ -121,11 +121,16 @@ function getLinks() {
             const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class
             let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
             if (!link) {
-                link = row.querySelector('a[href*="tiktok.com"]'); // Find Instagram link inside
+                link = row.querySelector('a[href*="tiktok.com"]');
+                if (link){
+                    link = link.href
+                }
+            } else {
+                link = link.href.concat("reels/");
             }
 
             if (link && (isEmpty || !isChecked)) {
-                links.push(link.href);
+                links.push(link);
             } else {
                 console.log(`Link found: ${link} Is Empty: ${isEmpty}`);
                 links.push('skip');
