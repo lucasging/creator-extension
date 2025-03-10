@@ -6,7 +6,6 @@ function addButtonToSearchResults() {
     if (searchResultsDiv) {
         // Find the header inside search-results
         const header = searchResultsDiv.querySelector('.header');
-        const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
         if (header && header.children.length==4) {
             const button = document.createElement('button');
             button.type = 'button';
@@ -25,7 +24,7 @@ function addButtonToSearchResults() {
             header.appendChild(button2);
 
             button.addEventListener('click', () => {
-                var links = getLinks(body);
+                var links = getLinks();
                 console.log('Found links:', links);
 
                 chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
@@ -59,13 +58,18 @@ function addButtonToSearchResults() {
                     if (index >= links.length) {
                         alert("Click load more until you get back to where you were!")
                     } else {
+                        uploadLinksToProfiles(links);
+                        for (index; (index < links.length && links[index] == 'skip'); index++) {
+                            responses.push(false);
+                            console.log(index);
+                        }
+
                         chrome.storage.local.set({ 
                             currentIndex: index,
                             profiles: { profiles: links }, // Ensure profiles is properly structured
                             responses: responses
                         });
-    
-                        uploadLinksToProfiles(links, sameList);
+
                         const firstProfileUrl = links[index]; // Get the first profile URL
     
                         // Open the first profile in a new tab
@@ -104,8 +108,9 @@ function retrieveResponses() {
     });
 }
 
-function getLinks(body) {
-    console.log(body);
+function getLinks() {
+    const searchResultsDiv = document.querySelector('.search-results');
+    const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
     let links = [];
     chrome.storage.local.get('checkboxState', function(result) {
         const isChecked = result.checkboxState;
@@ -132,11 +137,11 @@ function getLinks(body) {
 }
 
 // Function to upload links to profiles.json format
-function uploadLinksToProfiles(links, continued) {
+function uploadLinksToProfiles(links) {
     const profilesObject = { profiles: links };
 
     // Save to chrome.storage.local
-    chrome.storage.local.set({ profiles: profilesObject, continuedList: continued, newListAdded: true }, () => {
+    chrome.storage.local.set({ profiles: profilesObject }, () => {
         console.log('Profiles saved to storage:', profilesObject);
     });
 }

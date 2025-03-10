@@ -142,32 +142,10 @@ function initializePanel() {
     let profiles = [];
 
     // Load saved state first
-    chrome.storage.local.get(['currentIndex', 'responses', 'newListAdded', 'continuedList'], (result) => {
+    chrome.storage.local.get(['currentIndex', 'responses'], (result) => {
         let index = result.currentIndex || 0;
         let responses = result.responses || [];
-        const newListAdded = result.newListAdded || false; // Get the newListAdded flag
-        const continuedList = result.continuedList || false; // Get the newListAdded flag
-        console.log('Loaded saved state:', { index, responses, newListAdded });
-
-        // Check if a new list was added
-        if (newListAdded && !continuedList) {
-            index = 0; // Reset current index to 0
-            chrome.storage.local.set({ 
-                currentIndex: index
-            })
-            responses = new Array(profiles.length).fill(null); // Reset responses array
-            console.log('New list added. Current index reset to 0 and responses cleared.');
-
-            // Reset the newListAdded flag
-            chrome.storage.local.set({ newListAdded: false }, () => {
-                console.log('New list added flag reset to false.');
-            });
-        } else if (continuedList) {
-            // Reset the newListAdded flag
-            chrome.storage.local.set({ newListAdded: false }, () => {
-                console.log('New list added flag reset to false.');
-            });
-        }
+        console.log('Loaded saved state:', { index, responses });
 
         // Then load profiles from chrome.storage.local
         chrome.storage.local.get(['profiles'], (profileResult) => {
@@ -188,7 +166,7 @@ function initializePanel() {
             } else {
                 console.error('No profiles found in storage.');
             }
-            document.getElementById("display-text").innerHTML = "<b>" + responses.filter(Boolean).length.toString() + " Selected</b>  -  " + index.toString() + "/" + profiles.length.toString();
+            document.getElementById("display-text").innerHTML = "<b>" + responses.filter(Boolean).length.toString() + " Selected</b>  -  " + (index+1).toString() + "/" + profiles.length.toString();
         });
     });
 
