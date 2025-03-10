@@ -6,6 +6,7 @@ function addButtonToSearchResults() {
     if (searchResultsDiv) {
         // Find the header inside search-results
         const header = searchResultsDiv.querySelector('.header');
+        const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
         if (header && header.children.length==4) {
             const button = document.createElement('button');
             button.type = 'button';
@@ -24,7 +25,7 @@ function addButtonToSearchResults() {
             header.appendChild(button2);
 
             button.addEventListener('click', () => {
-                var links = getLinks();
+                var links = getLinks(body);
                 console.log('Found links:', links);
 
                 chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
@@ -81,7 +82,7 @@ function addButtonToSearchResults() {
 
             button2.addEventListener('click', () => {
                 retrieveResponses();
-            })
+            });
         }
     }
 }
@@ -103,16 +104,31 @@ function retrieveResponses() {
     });
 }
 
-function getLinks() {
-    // Get all anchor tags on the page
-    const iglinks = document.querySelectorAll('a[href*="instagram.com"]');
-    const ttlinks = document.querySelectorAll('a[href*="tiktok.com"]');
-    
-    // Extract href attributes
-    const instagramLinks = Array.from(iglinks).map(link => link.href + (link.href.endsWith('/') ? 'reels/' : '/reels/'));
-    const ttLinks = Array.from(ttlinks).map(link => link.href);
+function getLinks(body) {
+    console.log(body);
+    let links = [];
+    chrome.storage.local.get('checkboxState', function(result) {
+        const isChecked = result.checkboxState;
+        console.log("Checkbox is checked:", isChecked);
+              
+        body.forEach((row, index) => {
+            const listsInfoDiv = row.querySelector('div.lists-info'); // Find the div with class .lists-info
+            const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class
+            let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
+            if (!link) {
+                link = row.querySelector('a[href*="tiktok.com"]'); // Find Instagram link inside
+            }
 
-    return instagramLinks.length ? instagramLinks : ttLinks;
+            if (link && (isEmpty || !isChecked)) {
+                links.push(link.href);
+            } else {
+                console.log(`Link found: ${link} Is Empty: ${isEmpty}`);
+                links.push('skip');
+            }
+        });
+      });
+
+    return links;
 }
 
 // Function to upload links to profiles.json format
@@ -127,15 +143,12 @@ function uploadLinksToProfiles(links, continued) {
 
 function checkBoxes(whichBoxes) {
     var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    console.log("checkboxes:", checkboxes);
 
     var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
         !checkbox.matches('input#isVerified.ant-checkbox-input') && 
         !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
         !checkbox.matches('input#registered.ant-checkbox-input')
     );
-
-    console.log("checkboxes after:", filteredCheckboxes);
 
     var startIndex = 1;
     for (var i = startIndex; i < whichBoxes.length+1; i++) {

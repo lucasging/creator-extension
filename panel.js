@@ -221,7 +221,11 @@ function initializePanel() {
                         // Navigate after state is saved
                         if (index < profiles.length) {
                             console.log('Moving to profile:', profiles[index]);
-                            window.location.href = profiles[index]; // Navigate to the next profile
+                            if (profiles[index] == 'skip') {
+                                handleButtonClick(false);
+                            } else {
+                                window.location.href = profiles[index]; // Navigate to the next profile
+                            }
                         } else {
                             const selectedCount = currentResponses.filter(response => response === true).length;
                             buttonsContainer.style.display = 'none';
