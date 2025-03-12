@@ -39,13 +39,14 @@ function addButtonToSearchResults() {
                         const profiles = data.profiles.profiles;
                         
                         var sameList = true;
+                        // checks first 5 profiles to see if the list is the same
                         for (var i = 0; i < 5; i++) {
-                            console.log(i, profiles[i], links[i]);
-                            if (profiles[i] != links[i]) {
+                            if (profiles[i] != links[i] && profiles[i] != links[i].slice(4)) {
                                 sameList = false;
                             }
                         }
 
+                        // if same list, use current index and saved responses
                         var index = 0;
                         if (sameList) {
                             index = currentIndex;
@@ -59,7 +60,8 @@ function addButtonToSearchResults() {
                         alert("Click load more until you get back to where you were!")
                     } else {
                         uploadLinksToProfiles(links);
-                        for (index; (index < links.length && links[index] == 'skip'); index++) {
+                        // skip first profiles if already in lists
+                        for (index; (index < links.length && links[index].slice(0, 4) == 'skip'); index++) {
                             responses.push(false);
                             console.log(index);
                         }
@@ -133,7 +135,7 @@ function getLinks() {
                 links.push(link);
             } else {
                 console.log(`Link found: ${link} Is Empty: ${isEmpty}`);
-                links.push('skip');
+                links.push('skip' + link);
             }
         });
       });
