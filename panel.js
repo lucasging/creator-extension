@@ -234,7 +234,7 @@ function initializePanel() {
                 handleButtonClick(true)
             } else if (event.key === 'Backspace' || event.key === '2') {
                 handleButtonClick(false)
-            } else if (event.key === '5') {
+            } else if (event.key === '4') {
                 back()
             }
         }
