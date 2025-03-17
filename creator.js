@@ -51,7 +51,8 @@ function addButtonToSearchResults() {
                         chrome.storage.local.set({ 
                             currentIndex: index,
                             profiles: { profiles: links }, // Ensure profiles is properly structured
-                            responses: responses
+                            responses: responses,
+                            back: []
                         });
     
                         // Open the first profile in a new tab
@@ -65,21 +66,48 @@ function addButtonToSearchResults() {
 
 function retrieveResponses() {
     var links = getLinks();
-    chrome.storage.local.get(["profiles", "responses"], (data) => {
+    chrome.storage.local.get(["profiles", "responses", "back"], (data) => {
         const profiles = data.profiles.profiles;
+        const back = data.back;
+        console.log(back);
         if (sameFive(profiles, links)) {
             var responses = data.responses || [];
+            backCheckboxes(back);
             checkBoxes(responses);
         }
     })
+}
+
+function getCheckboxes() {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
+        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
+        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
+        !checkbox.matches('input#registered.ant-checkbox-input')
+    );
+
+    return filteredCheckboxes;
+}
+
+function backCheckboxes(listOfIndex) {
+    for (var i = 0; i < listOfIndex.length; i++) {
+        console.log(listOfIndex);
+        var checkboxes = getCheckboxes()
+        if (checkboxes[listOfIndex[i]+1].checked) {
+            console.log("checked")
+            checkboxes[listOfIndex[i]+1].click();
+        }
+    }
+    chrome.storage.local.set({back: []});
 }
 
 function getLinks() {
     const searchResultsDiv = document.querySelector('.search-results');
     const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
     let links = [];
-    chrome.storage.local.get('checkboxState', function(result) {
-        const isChecked = result.checkboxState;
+    chrome.storage.local.get('skipState', function(result) {
+        const isChecked = result.skipState;
               
         body.forEach((row) => {
             const listsInfoDiv = row.querySelector('div.lists-info'); // Find the div with class .lists-info
@@ -130,19 +158,11 @@ function uploadLinksToProfiles(links) {
 }
 
 function checkBoxes(whichBoxes) {
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-
-    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
-        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
-        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
-        !checkbox.matches('input#registered.ant-checkbox-input')
-    );
-
-    var startIndex = 1;
-    for (var i = startIndex; i < whichBoxes.length+1; i++) {
+    var checkboxes = getCheckboxes()
+    for (var i = 1; i < whichBoxes.length+1; i++) {
         if (whichBoxes[i-1]) {
-            if (!filteredCheckboxes[i].checked) {
-                filteredCheckboxes[i].click();
+            if (!checkboxes[i].checked) {
+                checkboxes[i].click();
             }
         }
     }

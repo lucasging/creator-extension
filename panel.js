@@ -206,16 +206,19 @@ function initializePanel() {
         }
 
         function back() {
-            chrome.storage.local.get(['currentIndex', 'responses'], (state) => {
+            chrome.storage.local.get(['currentIndex', 'responses', 'back'], (state) => {
                 let index = state.currentIndex || 0;
                 let currentResponses = state.responses || new Array(profiles.length).fill(null);
+                let listOfBack = state.back;
 
                 if (index > 0) {
                     index--;
+                    listOfBack.push(index);
                     currentResponses[index] = false;
                     chrome.storage.local.set({ 
                         currentIndex: index,
-                        responses: currentResponses
+                        responses: currentResponses,
+                        back: listOfBack
                     }, () => {
                         if (profiles[index].slice(0, 4) == 'skip') {
                             back();
