@@ -15,6 +15,8 @@ function addButtonToSearchResults() {
 
             header.appendChild(button);
 
+            manualClickedCheckboxes(getCheckboxes());
+
             button.addEventListener('click', () => {
                 var links = getLinks();
                 console.log('Found links:', links);
@@ -69,7 +71,6 @@ function retrieveResponses() {
     chrome.storage.local.get(["profiles", "responses", "back"], (data) => {
         const profiles = data.profiles.profiles;
         const back = data.back;
-        console.log(back);
         if (sameFive(profiles, links)) {
             var responses = data.responses || [];
             backCheckboxes(back);
@@ -91,15 +92,15 @@ function getCheckboxes() {
 }
 
 function backCheckboxes(listOfIndex) {
-    for (var i = 0; i < listOfIndex.length; i++) {
-        console.log(listOfIndex);
-        var checkboxes = getCheckboxes()
-        if (checkboxes[listOfIndex[i]+1].checked) {
-            console.log("checked")
-            checkboxes[listOfIndex[i]+1].click();
+    if (listOfIndex.length > 0) {
+        for (var i = 0; i < listOfIndex.length; i++) {
+            var checkboxes = getCheckboxes()
+            if (checkboxes[listOfIndex[i]+1].checked) {
+                checkboxes[listOfIndex[i]+1].click();
+            }
         }
+        chrome.storage.local.set({back: []});
     }
-    chrome.storage.local.set({back: []});
 }
 
 function getLinks() {
@@ -167,6 +168,21 @@ function checkBoxes(whichBoxes) {
         }
     }
 }
+
+function manualClickedCheckboxes(checkboxes) {
+    for (var i = 1; i < checkboxes.length; i++) {
+        (function(index) {
+            checkboxes[index].addEventListener("change", (event) => {
+                chrome.storage.local.get(["responses"], (data) => {
+                    console.log(event.target.checked);
+                    const responses = data.responses;
+                    responses[index - 1] = event.target.checked;
+                    chrome.storage.local.set({"responses": responses});
+                });
+            });
+        })(i);
+    }
+};
 
 function checkForSearchResults() {
     setInterval(() => {
