@@ -14,14 +14,6 @@ function addButtonToSearchResults() {
             button.textContent = 'Use Extension';
 
             header.appendChild(button);
-            
-            const button2 = document.createElement('button');
-            button2.type = 'button';
-            button2.className = 'ant-btn ant-btn-primary';
-            button2.style.margin = '10px';
-            button2.textContent = 'Update';
-
-            header.appendChild(button2);
 
             button.addEventListener('click', () => {
                 var links = getLinks();
@@ -29,25 +21,16 @@ function addButtonToSearchResults() {
 
                 chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
                     const currentIndex = data.currentIndex || 0;
-                    // Add error handling for undefined profiles
+                    // If first time, create new list
                     if (!data.profiles) {
                         console.log('No existing profiles found, creating new list');
-                        var sameList = false;
                         var responses = [];
                         var index = 0;
                     } else {
                         const profiles = data.profiles.profiles;
-                        
-                        var sameList = true;
-                        for (var i = 0; i < 5; i++) {
-                            console.log(i, profiles[i], links[i]);
-                            if (profiles[i] != links[i]) {
-                                sameList = false;
-                            }
-                        }
-
+                        // if same list, use current index and saved responses
                         var index = 0;
-                        if (sameList) {
+                        if (sameFive(profiles, links)) {
                             index = currentIndex;
                             var responses = data.responses || [];
                         } else {
@@ -59,7 +42,8 @@ function addButtonToSearchResults() {
                         alert("Click load more until you get back to where you were!")
                     } else {
                         uploadLinksToProfiles(links);
-                        for (index; (index < links.length && links[index] == 'skip'); index++) {
+                        // skip first profiles if already in lists
+                        for (index; (index < links.length && links[index].slice(0, 4) == 'skip'); index++) {
                             responses.push(false);
                             console.log(index);
                         }
@@ -67,58 +51,69 @@ function addButtonToSearchResults() {
                         chrome.storage.local.set({ 
                             currentIndex: index,
                             profiles: { profiles: links }, // Ensure profiles is properly structured
-                            responses: responses
+                            responses: responses,
+                            back: []
                         });
-
-                        const firstProfileUrl = links[index]; // Get the first profile URL
     
                         // Open the first profile in a new tab
-                        chrome.runtime.sendMessage({ action: 'openProfile', url: firstProfileUrl }, (response) => {
-                            if (response.success) {
-                                console.log('Profile opened in a new tab:', response.tabId);
-                            } else {
-                                console.error('Failed to open profile.');
-                            }
-                        });
+                        chrome.runtime.sendMessage({ action: 'openProfile', url: links[index]});
                     }
                 });
-            });
-
-            button2.addEventListener('click', () => {
-                retrieveResponses();
             });
         }
     }
 }
 
 function retrieveResponses() {
-    chrome.storage.local.get(["currentIndex", "responses"], (data) => {
-        if (chrome.runtime.lastError) {
-            console.error("Error retrieving data:", chrome.runtime.lastError);
-        } else {
-            console.log("Retrieved data:", data);
-            const currentIndex = data.currentIndex || 0;
-            const responses = data.responses || [];
-    
-            console.log("Current Index:", currentIndex);
-            console.log("Responses:", responses);
-
+    var links = getLinks();
+    chrome.storage.local.get(["profiles", "responses", "back"], (data) => {
+        const profiles = data.profiles.profiles;
+        const back = data.back;
+        console.log(back);
+        if (sameFive(profiles, links)) {
+            var responses = data.responses || [];
+            backCheckboxes(back);
             checkBoxes(responses);
         }
-    });
+    })
+}
+
+function getCheckboxes() {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
+        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
+        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
+        !checkbox.matches('input#registered.ant-checkbox-input')
+    );
+
+    return filteredCheckboxes;
+}
+
+function backCheckboxes(listOfIndex) {
+    for (var i = 0; i < listOfIndex.length; i++) {
+        console.log(listOfIndex);
+        var checkboxes = getCheckboxes()
+        if (checkboxes[listOfIndex[i]+1].checked) {
+            console.log("checked")
+            checkboxes[listOfIndex[i]+1].click();
+        }
+    }
+    chrome.storage.local.set({back: []});
 }
 
 function getLinks() {
     const searchResultsDiv = document.querySelector('.search-results');
     const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
     let links = [];
-    chrome.storage.local.get('checkboxState', function(result) {
-        const isChecked = result.checkboxState;
-        console.log("Checkbox is checked:", isChecked);
+    chrome.storage.local.get('skipState', function(result) {
+        const isChecked = result.skipState;
               
-        body.forEach((row, index) => {
+        body.forEach((row) => {
             const listsInfoDiv = row.querySelector('div.lists-info'); // Find the div with class .lists-info
-            const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class
+            const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class]
+
+            // disgusting code idk how to make better but just adds reels/ to the ig links
             let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
             if (!link) {
                 link = row.querySelector('a[href*="tiktok.com"]');
@@ -133,12 +128,23 @@ function getLinks() {
                 links.push(link);
             } else {
                 console.log(`Link found: ${link} Is Empty: ${isEmpty}`);
-                links.push('skip');
+                links.push('skip' + link);
             }
         });
       });
 
     return links;
+}
+
+// checks first 5 profiles to see if the list is the same
+function sameFive(profiles, links) {
+    var sameList = true;
+    for (var i = 0; i < 5; i++) {
+        if (profiles[i] != links[i] && profiles[i] != links[i].slice(4)) {
+            sameList = false;
+        }
+    }
+    return sameList;
 }
 
 // Function to upload links to profiles.json format
@@ -152,19 +158,11 @@ function uploadLinksToProfiles(links) {
 }
 
 function checkBoxes(whichBoxes) {
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-
-    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
-        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
-        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
-        !checkbox.matches('input#registered.ant-checkbox-input')
-    );
-
-    var startIndex = 1;
-    for (var i = startIndex; i < whichBoxes.length+1; i++) {
+    var checkboxes = getCheckboxes()
+    for (var i = 1; i < whichBoxes.length+1; i++) {
         if (whichBoxes[i-1]) {
-            if (!filteredCheckboxes[i].checked) {
-                filteredCheckboxes[i].click();
+            if (!checkboxes[i].checked) {
+                checkboxes[i].click();
             }
         }
     }
@@ -173,6 +171,7 @@ function checkBoxes(whichBoxes) {
 function checkForSearchResults() {
     setInterval(() => {
         addButtonToSearchResults(); // This function is called every 3 seconds
+        retrieveResponses()
     }, 3000); // Check every 3 seconds
 }
 

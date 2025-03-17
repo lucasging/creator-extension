@@ -9,9 +9,6 @@ function initializePanel() {
     const xImageUrl = chrome.runtime.getURL('assets/x.png');
 
     const igPanel = `
-    <head>
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    </head>
     <div id="creator-panel" style="
         position: fixed;
         top: 20px;
@@ -53,15 +50,13 @@ function initializePanel() {
             display: none;
             text-align: center;
             padding: 5px;
-            font-size: 14px;
-            font-family: 'Monteserrat', sans-serif;
+            font-size: 16px;
         "></div>
         <div id="display-text" style="
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
             color: #333;
-            font-family: 'Monteserrat', sans-serif;
         ">
         </div>
     </div>
@@ -114,29 +109,17 @@ function initializePanel() {
                 display: none;
                 text-align: center;
                 padding: 5px;
-                font-size: 14px;
-                font-family: 'Monteserrat', sans-serif;
+                font-size: 16px;
             "></div>
             <div id="display-text" style="
                 text-align: center;
                 margin-top: 10px;
                 font-size: 14px;
                 color: #333;
-                font-family: 'Monteserrat', sans-serif;
             ">
             </div>
         </div>
     `;
-
-    if (document.URL.includes('instagram.com')) {
-        panel.innerHTML = igPanel;
-    } else if (document.URL.includes('tiktok.com')) {
-        panel.innerHTML = ttPanel;
-    }
-
-    // First add panel to page
-    document.body.appendChild(panel);
-    console.log('Panel added to page');
 
     // Then load profiles and set up event listeners
     let profiles = [];
@@ -157,9 +140,15 @@ function initializePanel() {
                 }
                 console.log('Initial state:', { index, profiles });
 
-                if (!profiles.includes(document.URL) && !profiles.includes(document.URL.replace("www.", ""))) {
-                    document.body.removeChild(panel);
-                } else {
+                if (profiles.includes(document.URL) || profiles.includes(document.URL.replace("www.", "")) || profiles.includes(document.URL.concat("reels/"))) {
+                    if (document.URL.includes('instagram.com')) {
+                        panel.innerHTML = igPanel;
+                    } else if (document.URL.includes('tiktok.com')) {
+                        panel.innerHTML = ttPanel;
+                    }
+                    // First add panel to page
+                    document.body.appendChild(panel);
+                    console.log('Panel added to page');
                     setupEventListeners();
                 }
 
@@ -183,8 +172,6 @@ function initializePanel() {
                 let index = state.currentIndex || 0;
                 let currentResponses = state.responses || new Array(profiles.length).fill(null);
                 
-                console.log('Button clicked! Current state:', { index, profiles });
-                
                 if (profiles.length > 0 && index < profiles.length) {
                     // Record response for current profile
                     currentResponses[index] = isCheck;
@@ -195,11 +182,9 @@ function initializePanel() {
                         currentIndex: index,
                         responses: currentResponses
                     }, () => {
-                        console.log('State saved, new index:', index);
                         // Navigate after state is saved
                         if (index < profiles.length) {
-                            console.log('Moving to profile:', profiles[index]);
-                            if (profiles[index] == 'skip') {
+                            if (profiles[index].slice(0, 4) == 'skip') {
                                 handleButtonClick(false);
                             } else {
                                 window.location.href = profiles[index]; // Navigate to the next profile
@@ -220,6 +205,31 @@ function initializePanel() {
             });
         }
 
+        function back() {
+            chrome.storage.local.get(['currentIndex', 'responses', 'back'], (state) => {
+                let index = state.currentIndex || 0;
+                let currentResponses = state.responses || new Array(profiles.length).fill(null);
+                let listOfBack = state.back;
+
+                if (index > 0) {
+                    index--;
+                    listOfBack.push(index);
+                    currentResponses[index] = false;
+                    chrome.storage.local.set({ 
+                        currentIndex: index,
+                        responses: currentResponses,
+                        back: listOfBack
+                    }, () => {
+                        if (profiles[index].slice(0, 4) == 'skip') {
+                            back();
+                        } else {
+                            window.location.href = profiles[index];
+                        }
+                    });
+                }
+            });
+        }
+
         // Function to handle keydown events
         function handleKeyDown(event) {
             console.log("Key pressed:", event.key);
@@ -227,6 +237,8 @@ function initializePanel() {
                 handleButtonClick(true)
             } else if (event.key === 'Backspace' || event.key === '2') {
                 handleButtonClick(false)
+            } else if (event.key === '4') {
+                back()
             }
         }
 
