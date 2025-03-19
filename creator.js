@@ -15,9 +15,8 @@ function addButtonToSearchResults() {
 
             header.appendChild(button);
 
-            manualClickedCheckboxes(getCheckboxes());
-
             button.addEventListener('click', () => {
+                manualClickedCheckboxes(getCheckboxes());
                 var links = getLinks();
                 console.log('Found links:', links);
 
@@ -128,7 +127,6 @@ function getLinks() {
             if (link && (isEmpty || !isChecked)) {
                 links.push(link);
             } else {
-                console.log(`Link found: ${link} Is Empty: ${isEmpty}`);
                 links.push('skip' + link);
             }
         });
@@ -173,6 +171,7 @@ function manualClickedCheckboxes(checkboxes) {
     for (var i = 1; i < checkboxes.length; i++) {
         (function(index) {
             checkboxes[index].addEventListener("change", (event) => {
+                console.log("triggered")
                 chrome.storage.local.get(["responses"], (data) => {
                     console.log(event.target.checked);
                     const responses = data.responses;
