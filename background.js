@@ -15,3 +15,9 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         });
     }
 }, { url: [{ hostContains: 'creator.co' }] });
+
+chrome.runtime.onMessage.addListener((message, sender) => {
+    if (message.action === "closeTab" && sender.tab) {
+        chrome.tabs.remove(sender.tab.id);
+    }
+});
