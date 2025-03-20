@@ -39,10 +39,6 @@
         {
             "matches": ["https://*.creator.co/*"],
             "js": ["creator.js"]
-        },
-        {
-            "matches": ["https://*.google.com/*"],
-            "js": ["paneltest.js"]
         }
     ],
     "web_accessible_resources": [{
