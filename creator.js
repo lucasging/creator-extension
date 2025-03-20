@@ -104,6 +104,9 @@ function backCheckboxes(listOfIndex) {
 
 function getLinks() {
     const searchResultsDiv = document.querySelector('.search-results');
+    if (!searchResultsDiv) {
+        return [];
+    }
     const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
     let links = [];
     chrome.storage.local.get('skipState', function(result) {

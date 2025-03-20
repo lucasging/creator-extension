@@ -37,16 +37,6 @@ function initializePanel() {
                     // First add panel to page
                     document.body.appendChild(panel);
                     console.log('Panel added to page');
-                    chrome.storage.local.get(["panelPosition"], (data) => {
-                        if (data.panelPosition) {
-                            panel.style.top = `${data.panelPosition.top}px`;
-                            panel.style.left = `${data.panelPosition.left}px`;
-                            panel.style.right = "auto"; // Ensure right is not overriding
-                        } else {
-                            panel.style.top = "20px";
-                            panel.style.left = "20px"; // Default to left (instead of right)
-                        }
-                    });
                     setupEventListeners();
                 }
 
@@ -156,9 +146,9 @@ function initializePanel() {
         // Event listener for mouse down on the move button
         moveButton.addEventListener("mousedown", (e) => {
             isDragging = true;
-            offsetX = e.clientX - panel.getBoundingClientRect().left;
-            offsetY = e.clientY - panel.getBoundingClientRect().top;
-            panel.style.cursor = "grabbing"; // Change cursor to grabbing
+            offsetX = e.clientX - panelElement.getBoundingClientRect().left;
+            offsetY = e.clientY - panelElement.getBoundingClientRect().top;
+            moveButton.style.cursor = "grabbing"; // Change cursor to grabbing on the move button
         });
 
         // Event listener for mouse move on the document
@@ -167,9 +157,11 @@ function initializePanel() {
             let newX = e.clientX - offsetX;
             let newY = e.clientY - offsetY;
 
+            console.log(`Moving to: ${newX}, ${newY}`);
+
             // Update the position of the panel
-            panel.style.left = `${newX}px`;
-            panel.style.top = `${newY}px`;
+            panelElement.style.left = `${newX}px`;
+            panelElement.style.top = `${newY}px`;
         });
 
         // Event listener for mouse up on the document
@@ -178,17 +170,17 @@ function initializePanel() {
                 // Save the position to Chrome storage
                 chrome.storage.local.set({
                     panelPosition: {
-                        top: panel.offsetTop,
-                        left: panel.offsetLeft
+                        top: panelElement.offsetTop,
+                        left: panelElement.offsetLeft
                     }
                 });
             }
             isDragging = false; // Reset dragging state
-            panel.style.cursor = "grab"; // Change cursor back to grab
+            moveButton.style.cursor = "grab"; // Change cursor back to grab on the move button
         });
 
         // Prevent images from being dragged
-        const images = panel.querySelectorAll('img');
+        const images = panelElement.querySelectorAll('img');
         images.forEach((img) => {
             img.addEventListener('dragstart', (e) => {
                 e.preventDefault(); // Prevent the default drag behavior
@@ -198,18 +190,18 @@ function initializePanel() {
         // Restore panel position from Chrome storage when the panel is initialized
         chrome.storage.local.get("panelPosition", (data) => {
             if (data.panelPosition) {
-                panel.style.top = `${data.panelPosition.top}px`;
-                panel.style.left = `${data.panelPosition.left}px`;
+                panelElement.style.top = `${data.panelPosition.top}px`;
+                panelElement.style.left = `${data.panelPosition.left}px`;
             } else {
                 // Set default position if no position is saved
-                panel.style.top = '20px'; // Default top position
-                panel.style.left = '20px'; // Default left position
+                panelElement.style.top = '20px'; // Default top position
+                panelElement.style.left = '20px'; // Default left position
             }
         });
 
         // Ensure the panel is positioned correctly on load
-        panel.style.position = 'fixed'; // Ensure the panel is fixed
-        panel.style.cursor = 'grab'; // Set initial cursor style
+        panelElement.style.position = 'fixed'; // Ensure the panel is fixed
+        panelElement.style.cursor = 'default'; // Set initial cursor style for the panel
     }
 }
 
@@ -221,6 +213,20 @@ function makePanel(platform) {
     const moveImage = chrome.runtime.getURL('assets/move.png');
     var width = '0px';
     var height = '0px';
+
+    var top = '-5000px';
+    var left = '-5000px';
+
+    chrome.storage.local.get(["panelPosition"], (data) => {
+        if (data.panelPosition) {
+            top = `${data.panelPosition.top}px`;
+            left = `${data.panelPosition.left}px`;
+        } else {
+            top = '20px';
+            left = '20px';
+        }
+    });
+
     if (platform == "ig") {
         width = '150px';
         height = '140px';
@@ -233,8 +239,8 @@ function makePanel(platform) {
     const panel = `
     <div id="creator-panel" style="
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: ${top};
+        left: ${left};
         width: ${width};
         height: ${height};
         background: white;
@@ -296,6 +302,7 @@ function makePanel(platform) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                border: none;
             ">
                 <img src="${backImage}" width="17"/>
             </button>
@@ -307,6 +314,7 @@ function makePanel(platform) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                border: none;
             ">
                 <img src="${creatorImage}" width="17"/>
             </button>
@@ -318,6 +326,8 @@ function makePanel(platform) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                border: none;
+                cursor: grab;
             ">
                 <img src="${moveImage}" width="17"/>
             </button>
