@@ -1,9 +1,10 @@
 console.log('Content script loaded!');
 
+let displayText; // Declare the variable in a broader scope
+
 function initializePanel() {
     // Create the panel
     const panel = document.createElement('div');
-
     // Then load profiles and set up event listeners
     let profiles = [];
 
@@ -12,6 +13,8 @@ function initializePanel() {
         let index = result.currentIndex || 0;
         let responses = result.responses || [];
         console.log('Loaded saved state:', { index, responses });
+
+        displayText = "Selected: " + responses.filter(Boolean).length.toString(); // Set the value
 
         // Then load profiles from chrome.storage.local
         chrome.storage.local.get(['profiles'], (profileResult) => {
@@ -34,6 +37,16 @@ function initializePanel() {
                     // First add panel to page
                     document.body.appendChild(panel);
                     console.log('Panel added to page');
+                    chrome.storage.local.get(["panelPosition"], (data) => {
+                        if (data.panelPosition) {
+                            panel.style.top = `${data.panelPosition.top}px`;
+                            panel.style.left = `${data.panelPosition.left}px`;
+                            panel.style.right = "auto"; // Ensure right is not overriding
+                        } else {
+                            panel.style.top = "20px";
+                            panel.style.left = "20px"; // Default to left (instead of right)
+                        }
+                    });
                     setupEventListeners();
                 }
 
@@ -53,6 +66,7 @@ function initializePanel() {
         const backButton = panel.querySelector('#back-button');
         const creatorButton = panel.querySelector('#creator-button');
         const moveButton = panel.querySelector('#move-button');
+        const panelElement = panel.querySelector("#creator-panel");
         
 
         function handleButtonClick(isCheck) {
@@ -135,7 +149,67 @@ function initializePanel() {
         document.addEventListener("keydown", handleKeyDown);
         backButton.addEventListener("click", () => back());
         creatorButton.addEventListener("click", () => chrome.runtime.sendMessage({ action: "closeTab" }));
-        //moveButton.addEventListener("click", () => );
+
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        // Event listener for mouse down on the move button
+        moveButton.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            offsetX = e.clientX - panel.getBoundingClientRect().left;
+            offsetY = e.clientY - panel.getBoundingClientRect().top;
+            panel.style.cursor = "grabbing"; // Change cursor to grabbing
+        });
+
+        // Event listener for mouse move on the document
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging) return; // Only move if dragging is true
+            let newX = e.clientX - offsetX;
+            let newY = e.clientY - offsetY;
+
+            // Update the position of the panel
+            panel.style.left = `${newX}px`;
+            panel.style.top = `${newY}px`;
+        });
+
+        // Event listener for mouse up on the document
+        document.addEventListener("mouseup", () => {
+            if (isDragging) {
+                // Save the position to Chrome storage
+                chrome.storage.local.set({
+                    panelPosition: {
+                        top: panel.offsetTop,
+                        left: panel.offsetLeft
+                    }
+                });
+            }
+            isDragging = false; // Reset dragging state
+            panel.style.cursor = "grab"; // Change cursor back to grab
+        });
+
+        // Prevent images from being dragged
+        const images = panel.querySelectorAll('img');
+        images.forEach((img) => {
+            img.addEventListener('dragstart', (e) => {
+                e.preventDefault(); // Prevent the default drag behavior
+            });
+        });
+
+        // Restore panel position from Chrome storage when the panel is initialized
+        chrome.storage.local.get("panelPosition", (data) => {
+            if (data.panelPosition) {
+                panel.style.top = `${data.panelPosition.top}px`;
+                panel.style.left = `${data.panelPosition.left}px`;
+            } else {
+                // Set default position if no position is saved
+                panel.style.top = '20px'; // Default top position
+                panel.style.left = '20px'; // Default left position
+            }
+        });
+
+        // Ensure the panel is positioned correctly on load
+        panel.style.position = 'fixed'; // Ensure the panel is fixed
+        panel.style.cursor = 'grab'; // Set initial cursor style
     }
 }
 
@@ -207,6 +281,7 @@ function makePanel(platform) {
             font-size: 14px;
             color: #333;
         ">
+            ${displayText}
         </div>
         <div id="bottom-buttons" class="buttons-container" style="
             display: flex;

@@ -171,9 +171,7 @@ function manualClickedCheckboxes(checkboxes) {
     for (var i = 1; i < checkboxes.length; i++) {
         (function(index) {
             checkboxes[index].addEventListener("change", (event) => {
-                console.log("triggered")
                 chrome.storage.local.get(["responses"], (data) => {
-                    console.log(event.target.checked);
                     const responses = data.responses;
                     responses[index - 1] = event.target.checked;
                     chrome.storage.local.set({"responses": responses});
