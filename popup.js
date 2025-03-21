@@ -5,10 +5,6 @@ const resetPositionButton = document.getElementById('reset-position-button');
 chrome.storage.local.get('skipState', function(result) {
   if (result.skipState !== undefined) {
     checkbox.checked = result.skipState;
-  } else {
-    // If no stored state exists, set it to checked by default
-    checkbox.checked = true;
-    chrome.storage.local.set({ 'skipState': true }); // Save the default state
   }
 });
 
