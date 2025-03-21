@@ -87,6 +87,11 @@ function initializePanel() {
                             document.getElementById("display-text").innerText = "";
                             messageElement.style.display = 'block';
                             messageElement.textContent = `You selected ${selectedCount} out of ${profiles.length} profiles`;
+                            if (panelElement.style.height == '140px') {
+                                panelElement.style.height = '85px';
+                            } else {
+                                panelElement.style.height = '130px';
+                            }
 
                             chrome.storage.local.set({ responses: currentResponses }, () => {
                                 console.log('Responses saved to storage:', currentResponses);
@@ -228,7 +233,7 @@ function makePanel(platform) {
     });
 
     if (platform == "ig") {
-        width = '150px';
+        width = '160px';
         height = '140px';
     } else if (platform == "tt") {
         width = '200px';
@@ -303,6 +308,7 @@ function makePanel(platform) {
                 align-items: center;
                 justify-content: center;
                 border: none;
+                cursor: pointer;
             ">
                 <img src="${backImage}" width="17"/>
             </button>
@@ -315,6 +321,7 @@ function makePanel(platform) {
                 align-items: center;
                 justify-content: center;
                 border: none;
+                cursor: pointer;
             ">
                 <img src="${creatorImage}" width="17"/>
             </button>
