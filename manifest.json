@@ -11,7 +11,7 @@
         "https://*.instagram.com/*",
         "https://*.tiktok.com/*"
     ],
-    "version": "1.3",
+    "version": "1.4",
     "description": "Speeds up influencer recruitment for the Creator.co search tool.",
     "icons": {
         "16": "assets/creator16.png",
