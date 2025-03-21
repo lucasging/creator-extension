@@ -3,22 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkbox Popup</title>
+  <title>Recruitment Extension Tool</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 10px;
-      margin: 0;
-      width: 200px;
+      width: 300px; /* Set a fixed width for the popup */
+      padding: 20px;
+      background-color: #f9f9f9; /* Light background color */
+      color: #333; /* Dark text color */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+    h1 {
+      font-size: 20px; /* Title font size */
+      margin: 0; /* Remove default margin */
+      text-align: center; /* Center the title */
+    }
+    p {
+      font-size: 14px; /* Smaller font size for the author and version */
+      text-align: center; /* Center the text */
+      margin: 5px 0; /* Add some margin */
+    }
+    .settings {
+      margin-top: 20px; /* Space above settings */
+      border-top: 1px solid #ccc; /* Divider line */
+      padding-top: 10px; /* Padding above settings */
+    }
+    label {
+      display: block; /* Make labels block elements */
+      margin: 10px 0; /* Space between labels */
+    }
+    button {
+      width: 100%; /* Full width buttons */
+      padding: 10px; /* Padding for buttons */
+      background-color: #007BFF; /* Button color */
+      color: white; /* Button text color */
+      border: none; /* Remove border */
+      border-radius: 5px; /* Rounded corners */
+      cursor: pointer; /* Pointer cursor on hover */
+    }
+    button:hover {
+      background-color: #0056b3; /* Darker button color on hover */
     }
   </style>
 </head>
 <body>
-  <label>
-    <input type="checkbox" id="checkbox" />
-    Exclude Profiles in Lists
-  </label>
-  <button id="reset-position-button">Reset Panel Position</button>
+  <h1>Recruitment Extension Tool</h1>
+  <p>Built by Lucas Gingera</p>
+  <p>Version 1.4</p>
+  
+  <div class="settings">
+    <label>
+      <input type="checkbox" id="checkbox"> Skip Creators In Lists
+    </label>
+    <button id="reset-position-button">Reset Panel Position</button>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
