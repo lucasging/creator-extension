@@ -122,7 +122,9 @@ function getLinks() {
             let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
             if (!link) {
                 link = row.querySelector('a[href*="tiktok.com"]');
-                link = row.querySelector('a[href*="youtube.com"]')
+                if (!link) {
+                    link = row.querySelector('a[href*="youtube.com"]')
+                }
                 if (link){
                     link = link.href
                 }
