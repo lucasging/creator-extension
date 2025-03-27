@@ -16,7 +16,9 @@ function addButtonToSearchResults() {
             header.appendChild(button);
 
             button.addEventListener('click', () => {
-                manualClickedCheckboxes(getCheckboxes());
+                var checkboxes = getCheckboxes()
+                manualClickedCheckboxes(checkboxes);
+                firstCheckboxUncheckAll(checkboxes);
                 var links = getLinks();
                 console.log('Found links:', links);
 
@@ -120,6 +122,9 @@ function getLinks() {
             let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
             if (!link) {
                 link = row.querySelector('a[href*="tiktok.com"]');
+                if (!link) {
+                    link = row.querySelector('a[href*="youtube.com"]')
+                }
                 if (link){
                     link = link.href
                 }
@@ -183,6 +188,13 @@ function manualClickedCheckboxes(checkboxes) {
         })(i);
     }
 };
+
+function firstCheckboxUncheckAll(checkboxes) {
+    checkboxes[0].addEventListener("change", () => {
+        var n = checkboxes.length;
+        chrome.storage.local.set({"responses": Array(n).fill(false)})
+    })
+}
 
 function checkForSearchResults() {
     setInterval(() => {

@@ -11,7 +11,7 @@
         "https://*.instagram.com/*",
         "https://*.tiktok.com/*"
     ],
-    "version": "1.4",
+    "version": "1.5",
     "description": "Speeds up influencer recruitment for the Creator.co search tool.",
     "icons": {
         "16": "assets/creator16.png",
@@ -33,7 +33,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*"],
+            "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*", "https://*.youtube.com/*"],
             "js": ["panel.js"]
         },
         {
@@ -43,6 +43,6 @@
     ],
     "web_accessible_resources": [{
         "resources": ["assets/*"],
-        "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*"]
+        "matches": ["https://*.instagram.com/*", "https://*.tiktok.com/*", "https://*.youtube.com/*"]
     }]
 }

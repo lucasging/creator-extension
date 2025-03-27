@@ -239,7 +239,8 @@ function makePanel(platform) {
         width = '200px';
         height = '175px';
     } else if (platform == "yt") {
-
+        width = '160px';
+        height = '140px';
     } 
     const panel = `
     <div id="creator-panel" style="
