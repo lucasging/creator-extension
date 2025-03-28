@@ -2,10 +2,7 @@
     "name": "Creator Recruitment Tool",
     "permissions": [
         "tabs",
-        "storage",
-        "activeTab",
-        "scripting",
-        "webNavigation"
+        "storage"
     ],
     "host_permissions": [
         "https://*.instagram.com/*",
