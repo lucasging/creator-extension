@@ -4,10 +4,6 @@
         "tabs",
         "storage"
     ],
-    "host_permissions": [
-        "https://*.instagram.com/*",
-        "https://*.tiktok.com/*"
-    ],
     "version": "1.5",
     "description": "Speeds up influencer recruitment for the Creator.co search tool.",
     "icons": {
