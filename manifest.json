@@ -1,7 +1,6 @@
 {
     "name": "Creator Recruitment Tool",
     "permissions": [
-        "tabs",
         "storage"
     ],
     "version": "1.5",
