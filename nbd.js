@@ -1,19 +1,27 @@
 let searchResultsFound = false; // Variable to track if the search results div is found
 
 function addButtonToSearchResults() {
-    const searchResultsDiv = document.querySelector('.search-results');
+    const searchResultsDiv = document.querySelector('.table-wrapper');
 
     if (searchResultsDiv) {
         // Find the header inside search-results
-        const header = searchResultsDiv.querySelector('.header');
-        if (header && header.children.length==4) {
+        const header = searchResultsDiv.querySelector('.ant-table-thead');
+        const rows = header.querySelectorAll('th');
+        const row = rows[rows.length-1];
+        if (header && row.children.length==0) {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.justifyContent = 'flex-end';
+            wrapper.style.width = '100%';
+
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'ant-btn ant-btn-primary';
             button.style.margin = '10px';
             button.textContent = 'Select Faster';
 
-            header.appendChild(button);
+            wrapper.appendChild(button);
+            row.appendChild(wrapper);
 
             button.addEventListener('click', () => {
                 var checkboxes = getCheckboxes()
@@ -81,15 +89,10 @@ function retrieveResponses() {
 }
 
 function getCheckboxes() {
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-
-    var filteredCheckboxes = Array.from(checkboxes).filter(checkbox => 
-        !checkbox.matches('input#isVerified.ant-checkbox-input') && 
-        !checkbox.matches('input#usernameOperator.ant-checkbox-input') && 
-        !checkbox.matches('input#registered.ant-checkbox-input')
-    );
-
-    return filteredCheckboxes;
+    const wrapper = document.querySelector('.table-wrapper');
+    const table = wrapper.querySelector('.sc-bvCBbN.lpiclk');
+    var checkboxes = table.querySelectorAll('input[type="checkbox"]');
+    return checkboxes;
 }
 
 function backCheckboxes(listOfIndex) {
@@ -104,49 +107,61 @@ function backCheckboxes(listOfIndex) {
     }
 }
 
+// Returns array of links
 function getLinks() {
-    const searchResultsDiv = document.querySelector('.search-results');
-    if (!searchResultsDiv) {
-        return [];
-    }
-    const body = Array.from(searchResultsDiv.querySelectorAll('.body-row')); // Select all rows
+    // find the table
+    const searchResultsDiv = document.querySelector('.table-wrapper');
+    if (!searchResultsDiv) {return []};    // no table found
+
+    // find all the rows
+    const body = Array.from(searchResultsDiv.querySelectorAll('.ant-table-row.ant-table-row-level-0'));
     let links = [];
+
+    // get the state of whether the skip creators in lists button is checked
     chrome.storage.local.get('skipState', function(result) {
         const isChecked = result.skipState;
-              
+        // cycle through each row, adding the link to a list
         body.forEach((row) => {
-            const listsInfoDiv = row.querySelector('div.lists-info'); // Find the div with class .lists-info
-            const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class]
-
-            // disgusting code idk how to make better but just adds reels/ to the ig links
-            let link = row.querySelector('a[href*="instagram.com"]'); // Find Instagram link inside
-            if (!link) {
-                link = row.querySelector('a[href*="tiktok.com"]');
-                if (!link) {
-                    link = row.querySelector('a[href*="youtube.com"]')
-                }
-                if (link){
-                    link = link.href
-                }
-            } else {
-                link = link.href.concat("reels/");
-            }
-
-            if (link && (isEmpty || !isChecked)) {
+            // to be added: check if already in list
+            var link = makeLink(row);
+            // if (link && (isEmpty || !isChecked)) { -- old code for when we have smt to check if a profile is in a list
+            if (link) {
                 links.push(link);
-            } else {
-                links.push('skip' + link);
             }
+            // else {
+            //     links.push('skip' + link);
+            // } -- old code for skip links
         });
       });
-
     return links;
+}
+
+// return a working link given a row
+function makeLink(row) {
+    let link = row.querySelector('a[href*="instagram.com"]');
+    if (!link) {
+        link = row.querySelector('a[href*="tiktok.com"]');
+        if (link) {
+            // the tiktok link given is a redirect so I'm going to change it to what it redirects to
+            // this is because the extension only shows up on urls in the list so when it redirects it doesnt show up
+            var usernameElement = row.querySelector('.ant-flex a');
+            var username = usernameElement ? usernameElement.textContent.trim() : null;
+            link = "https://www.tiktok.com/" + username;
+        }
+        if (!link) {
+            link = row.querySelector('a[href*="youtube.com"]')
+            link = link.href
+        }
+    } else {
+        link = link.href.concat("reels/");
+    }
+    return link;
 }
 
 // checks first 5 profiles to see if the list is the same
 function sameFive(profiles, links) {
     var sameList = true;
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < (links.length < 5 ? links.length : 5); i++) {
         if (profiles[i] != links[i] && profiles[i] != links[i].slice(4)) {
             sameList = false;
         }
@@ -202,16 +217,5 @@ function checkForSearchResults() {
         retrieveResponses()
     }, 3000); // Check every 3 seconds
 }
-
-window.addEventListener('popstate', () => {
-    // URL has changed, trigger addButtonToSearchResults again
-    addButtonToSearchResults();
-});
-
-
-window.addEventListener('load', () => {
-    console.log('Page fully loaded');
-    addButtonToSearchResults();
-});
 
 checkForSearchResults();

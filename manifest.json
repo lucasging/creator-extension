@@ -29,8 +29,12 @@
             "js": ["panel.js"]
         },
         {
-            "matches": ["https://*.creator.co/*"],
+            "matches": ["https://brands.creator.co/*"],
             "js": ["creator.js"]
+        },
+        {
+            "matches": ["https://dashboard.creator.co/*"],
+            "js": ["nbd.js"]
         }
     ],
     "web_accessible_resources": [{
