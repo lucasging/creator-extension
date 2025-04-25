@@ -1,5 +1,4 @@
-let searchResultsFound = false; // Variable to track if the search results div is found
-
+// current add button, but will be replaced later
 function addButtonToSearchResults() {
     const searchResultsDiv = document.querySelector('.table-wrapper');
 
@@ -24,57 +23,60 @@ function addButtonToSearchResults() {
             row.appendChild(wrapper);
 
             button.addEventListener('click', () => {
-                var checkboxes = getCheckboxes()
-                manualClickedCheckboxes(checkboxes);
-                firstCheckboxUncheckAll(checkboxes);
-                var links = getLinks();
-                console.log('Found links:', links);
-
-                chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
-                    const currentIndex = data.currentIndex || 0;
-                    // If first time, create new list
-                    if (!data.profiles) {
-                        console.log('No existing profiles found, creating new list');
-                        var responses = [];
-                        var index = 0;
-                    } else {
-                        const profiles = data.profiles.profiles;
-                        // if same list, use current index and saved responses
-                        var index = 0;
-                        if (sameFive(profiles, links)) {
-                            index = currentIndex;
-                            var responses = data.responses || [];
-                        } else {
-                            var responses = [];
-                        }
-                    }
-
-                    if (index >= links.length) {
-                        alert("Click load more until you get back to where you were!")
-                    } else {
-                        uploadLinksToProfiles(links);
-                        // skip first profiles if already in lists
-                        for (index; (index < links.length && links[index].slice(0, 4) == 'skip'); index++) {
-                            responses.push(false);
-                            console.log(index);
-                        }
-
-                        chrome.storage.local.set({ 
-                            currentIndex: index,
-                            profiles: { profiles: links }, // Ensure profiles is properly structured
-                            responses: responses,
-                            back: []
-                        });
-    
-                        // Open the first profile in a new tab
-                        chrome.runtime.sendMessage({ action: 'openProfile', url: links[index]});
-                    }
-                });
+                onButtonClick();
             });
         }
     }
 }
 
+// when button is clicked update all variables and open first profile
+function onButtonClick() {
+    var checkboxes = getCheckboxes()
+    manualClickedCheckboxes(checkboxes);
+    var links = getLinks();
+    console.log('Found links:', links);
+
+    chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
+        const currentIndex = data.currentIndex || 0;
+        // If first time, create new list
+        if (!data.profiles) {
+            console.log('No existing profiles found, creating new list');
+            var responses = [];
+            var index = 0;
+        } else {
+            const profiles = data.profiles.profiles;
+            // if same list, use current index and saved responses
+            var index = 0;
+            if (sameFive(profiles, links)) {
+                index = currentIndex;
+                var responses = data.responses || [];
+            } else {
+                var responses = [];
+            }
+        }
+
+        if (index >= links.length) {
+            alert("Click load more until you get back to where you were!")
+        } else {
+            // skip first profiles if already in lists
+            for (index; (index < links.length && links[index].slice(0, 4) == 'skip'); index++) {
+                responses.push(false);
+            }
+
+            chrome.storage.local.set({ 
+                currentIndex: index,
+                profiles: { profiles: links }, // Ensure profiles is properly structured
+                responses: responses,
+                back: []
+            });
+
+            // Open the first profile in a new tab
+            chrome.runtime.sendMessage({ action: 'openProfile', url: links[index]});
+        }
+    });
+}
+
+// retrieves responses and updates the checkboxes
 function retrieveResponses() {
     var links = getLinks();
     chrome.storage.local.get(["profiles", "responses", "back"], (data) => {
@@ -88,26 +90,28 @@ function retrieveResponses() {
     })
 }
 
+// finds all the checkboxes
 function getCheckboxes() {
     const wrapper = document.querySelector('.table-wrapper');
-    const table = wrapper.querySelector('.sc-bvCBbN.lpiclk');
+    const table = wrapper.querySelector('.ant-table-tbody');
     var checkboxes = table.querySelectorAll('input[type="checkbox"]');
     return checkboxes;
 }
 
+// checks if any items have been added to the back query in which case we unselect them and clear the list
 function backCheckboxes(listOfIndex) {
     if (listOfIndex.length > 0) {
         for (var i = 0; i < listOfIndex.length; i++) {
             var checkboxes = getCheckboxes()
-            if (checkboxes[listOfIndex[i]+1].checked) {
-                checkboxes[listOfIndex[i]+1].click();
+            if (checkboxes[listOfIndex[i]].checked) {
+                checkboxes[listOfIndex[i]].click();
             }
         }
         chrome.storage.local.set({back: []});
     }
 }
 
-// Returns array of links
+// returns the array of links, adding "skip" to those which are already in lists
 function getLinks() {
     // find the table
     const searchResultsDiv = document.querySelector('.table-wrapper');
@@ -119,7 +123,7 @@ function getLinks() {
 
     // get the state of whether the skip creators in lists button is checked
     chrome.storage.local.get('skipState', function(result) {
-        const isChecked = result.skipState;
+        // const isChecked = result.skipState;
         // cycle through each row, adding the link to a list
         body.forEach((row) => {
             // to be added: check if already in list
@@ -169,34 +173,30 @@ function sameFive(profiles, links) {
     return sameList;
 }
 
-// Function to upload links to profiles.json format
-function uploadLinksToProfiles(links) {
-    const profilesObject = { profiles: links };
-
-    // Save to chrome.storage.local
-    chrome.storage.local.set({ profiles: profilesObject }, () => {
-        console.log('Profiles saved to storage:', profilesObject);
-    });
-}
-
+// updates checkboxes and looks for action bar
 function checkBoxes(whichBoxes) {
     var checkboxes = getCheckboxes()
-    for (var i = 1; i < whichBoxes.length+1; i++) {
-        if (whichBoxes[i-1]) {
+    for (var i = 0; i < whichBoxes.length+1; i++) {
+        if (whichBoxes[i]) {
             if (!checkboxes[i].checked) {
                 checkboxes[i].click();
             }
         }
     }
+    var action_bar = document.querySelector('.action-bar');
+    if (action_bar) {
+        firstCheckboxUncheckAll(action_bar, checkboxes);
+    }
 }
 
+// if someone manually clicks a checkbox it updates the list
 function manualClickedCheckboxes(checkboxes) {
-    for (var i = 1; i < checkboxes.length; i++) {
+    for (var i = 0; i < checkboxes.length; i++) {
         (function(index) {
             checkboxes[index].addEventListener("change", (event) => {
                 chrome.storage.local.get(["responses"], (data) => {
                     const responses = data.responses;
-                    responses[index - 1] = event.target.checked;
+                    responses[index] = event.target.checked;
                     chrome.storage.local.set({"responses": responses});
                 });
             });
@@ -204,17 +204,55 @@ function manualClickedCheckboxes(checkboxes) {
     }
 };
 
-function firstCheckboxUncheckAll(checkboxes) {
-    checkboxes[0].addEventListener("change", () => {
+// the action bar checkbox and clear selection button will reset the list
+function firstCheckboxUncheckAll(action_bar, checkboxes) {
+    var checkbox = action_bar.querySelector('input[type="checkbox"]');
+    var text = action_bar.querySelector('.ant-btn');
+    checkbox.addEventListener("change", () => {
+        var n = checkboxes.length;
+        chrome.storage.local.set({"responses": Array(n).fill(false)})
+    })
+    text.addEventListener("click", () => {
         var n = checkboxes.length;
         chrome.storage.local.set({"responses": Array(n).fill(false)})
     })
 }
 
+// inject into the new button
+function injectExtension() {
+    const button = document.querySelector(''); // New Button
+    if (button) {
+      const labelDiv = button.querySelector('div.ant-flex');
+      if (labelDiv) {
+        for (let node of labelDiv.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE || node.nodeType === 3) {
+            if (node.textContent.trim() === "Select Faster") {
+              console.log("true");
+              return;
+            }
+            node.textContent = ''; // clear any raw text nodes
+          }
+        }
+  
+        labelDiv.append("Select Faster");
+      }
+      button.addEventListener(
+        'click',
+        (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onButtonClick();
+        },
+        true
+      );
+    }
+  }  
+
+// polling for the button and the responses
 function checkForSearchResults() {
     setInterval(() => {
-        addButtonToSearchResults(); // This function is called every 3 seconds
-        retrieveResponses()
+        addButtonToSearchResults(); // change to injectExtension() when new button
+        retrieveResponses();
     }, 3000); // Check every 3 seconds
 }
 

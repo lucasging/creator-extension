@@ -1,4 +1,4 @@
-let searchResultsFound = false; // Variable to track if the search results div is found
+// OLD DASHBOARD
 
 function addButtonToSearchResults() {
     const searchResultsDiv = document.querySelector('.search-results');
@@ -44,7 +44,6 @@ function addButtonToSearchResults() {
                     if (index >= links.length) {
                         alert("Click load more until you get back to where you were!")
                     } else {
-                        uploadLinksToProfiles(links);
                         // skip first profiles if already in lists
                         for (index; (index < links.length && links[index].slice(0, 4) == 'skip'); index++) {
                             responses.push(false);
@@ -154,16 +153,6 @@ function sameFive(profiles, links) {
     return sameList;
 }
 
-// Function to upload links to profiles.json format
-function uploadLinksToProfiles(links) {
-    const profilesObject = { profiles: links };
-
-    // Save to chrome.storage.local
-    chrome.storage.local.set({ profiles: profilesObject }, () => {
-        console.log('Profiles saved to storage:', profilesObject);
-    });
-}
-
 function checkBoxes(whichBoxes) {
     var checkboxes = getCheckboxes()
     for (var i = 1; i < whichBoxes.length+1; i++) {
@@ -176,12 +165,12 @@ function checkBoxes(whichBoxes) {
 }
 
 function manualClickedCheckboxes(checkboxes) {
-    for (var i = 1; i < checkboxes.length; i++) {
+    for (var i = 0; i < checkboxes.length; i++) {
         (function(index) {
             checkboxes[index].addEventListener("change", (event) => {
                 chrome.storage.local.get(["responses"], (data) => {
                     const responses = data.responses;
-                    responses[index - 1] = event.target.checked;
+                    responses[index] = event.target.checked;
                     chrome.storage.local.set({"responses": responses});
                 });
             });
@@ -202,16 +191,5 @@ function checkForSearchResults() {
         retrieveResponses()
     }, 3000); // Check every 3 seconds
 }
-
-window.addEventListener('popstate', () => {
-    // URL has changed, trigger addButtonToSearchResults again
-    addButtonToSearchResults();
-});
-
-
-window.addEventListener('load', () => {
-    console.log('Page fully loaded');
-    addButtonToSearchResults();
-});
 
 checkForSearchResults();
