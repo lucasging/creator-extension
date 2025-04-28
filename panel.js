@@ -1,6 +1,5 @@
-console.log('Content script loaded!');
-
-let displayText; // Declare the variable in a broader scope
+// sorry this is kinda rough code im not gonna lie
+let displayText;
 
 function initializePanel() {
     // Create the panel
@@ -34,6 +33,7 @@ function initializePanel() {
                     } else if (document.URL.includes('youtube.com')) {
                         panel.innerHTML = makePanel("yt");
                     }
+                    addTooltips(panel);
                     // First add panel to page
                     document.body.appendChild(panel);
                     console.log('Panel added to page');
@@ -102,12 +102,12 @@ function initializePanel() {
             });
         }
 
+        // to go to previous creator
         function back() {
             chrome.storage.local.get(['currentIndex', 'responses', 'back'], (state) => {
                 let index = state.currentIndex || 0;
                 let currentResponses = state.responses || new Array(profiles.length).fill(null);
                 let listOfBack = state.back;
-
                 if (index > 0) {
                     index--;
                     listOfBack.push(index);
@@ -210,6 +210,7 @@ function initializePanel() {
     }
 }
 
+// the html + css for the panel
 function makePanel(platform) {
     const checkImageUrl = chrome.runtime.getURL('assets/check.png');
     const xImageUrl = chrome.runtime.getURL('assets/x.png');
@@ -219,6 +220,7 @@ function makePanel(platform) {
     var width = '0px';
     var height = '0px';
 
+    // to give it time to load, and then itll move into position
     var top = '-5000px';
     var left = '-5000px';
 
@@ -262,7 +264,7 @@ function makePanel(platform) {
             gap: 20px;
             margin-bottom: 15px;
         ">
-            <button id="check-button" class="button" style="
+            <button id="check-button" class="button" data-tooltip="Select Creator" style="
                 border: none;
                 padding: 15px;
                 cursor: pointer;
@@ -271,7 +273,7 @@ function makePanel(platform) {
             ">
                 <img src="${checkImageUrl}" width="40"/>
             </button>
-            <button id="x-button" class="button" style="
+            <button id="x-button" class="button" data-tooltip="Skip Creator" style="
                 border: none;
                 padding: 15px;
                 cursor: pointer;
@@ -291,7 +293,6 @@ function makePanel(platform) {
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
-            color: #333;
         ">
             ${displayText}
         </div>
@@ -300,7 +301,7 @@ function makePanel(platform) {
             justify-content: space-between;
             margin-top: 12px; /* Add some space above the circles */
         ">
-            <button id="back-button" class="button" style="
+            <button id="back-button" class="button" data-tooltip="Back to Last Creator" style="
                 width: 25px; /* Circle width */
                 height: 25px; /* Circle height */
                 border-radius: 50%; /* Make it circular */
@@ -313,7 +314,7 @@ function makePanel(platform) {
             ">
                 <img src="${backImage}" width="17"/>
             </button>
-            <button id="creator-button" class="button" style="
+            <button id="creator-button" class="button" data-tooltip="Back to Dashboard" style="
                 width: 25px; /* Circle width */
                 height: 25px; /* Circle height */
                 border-radius: 50%; /* Make it circular */
@@ -326,7 +327,7 @@ function makePanel(platform) {
             ">
                 <img src="${creatorImage}" width="17"/>
             </button>
-            <button id="move-button" class="button" style="
+            <button id="move-button" class="button" data-tooltip="Move Panel" style="
                 width: 25px; /* Circle width */
                 height: 25px; /* Circle height */
                 border-radius: 50%; /* Make it circular */
@@ -346,10 +347,50 @@ function makePanel(platform) {
     return panel;
 }
 
+// added hover states
+function addTooltips(panel) {
+    // Tooltip functionality
+    const buttons = panel.querySelectorAll('.button');
+    buttons.forEach(button => {
+        let tooltipTimeout;
+
+        button.addEventListener('mouseenter', (event) => {
+            const tooltipText = event.target.getAttribute('data-tooltip');
+            
+            tooltipTimeout = setTimeout(() => {
+                const tooltip = document.createElement('div');
+                tooltip.classList.add('tooltip');
+                tooltip.textContent = tooltipText;
+                tooltip.style.position = 'absolute';
+                
+                // Adjusting position slightly
+                tooltip.style.bottom = '40px';  // Make the tooltip appear a bit higher
+                tooltip.style.left = '50%';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.padding = '5px 10px';
+                tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                tooltip.style.color = 'white';
+                tooltip.style.fontSize = '12px';
+                tooltip.style.borderRadius = '5px';
+                tooltip.style.whiteSpace = 'nowrap';
+
+                button.appendChild(tooltip);
+            }, 1000); // delay before showing the tooltip
+        });
+
+        button.addEventListener('mouseleave', () => {
+            clearTimeout(tooltipTimeout); // Clear timeout if mouse leaves before the tooltip shows
+            const tooltip = button.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        });
+    });
+}
+
 // Start the initialization when the document is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializePanel);
-
 } else {
     initializePanel();
 }
