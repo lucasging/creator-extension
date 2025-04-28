@@ -1,6 +1,5 @@
-console.log('Content script loaded!');
-
-let displayText; // Declare the variable in a broader scope
+// sorry this is kinda rough code im not gonna lie
+let displayText;
 
 function initializePanel() {
     // Create the panel
@@ -103,12 +102,12 @@ function initializePanel() {
             });
         }
 
+        // to go to previous creator
         function back() {
             chrome.storage.local.get(['currentIndex', 'responses', 'back'], (state) => {
                 let index = state.currentIndex || 0;
                 let currentResponses = state.responses || new Array(profiles.length).fill(null);
                 let listOfBack = state.back;
-
                 if (index > 0) {
                     index--;
                     listOfBack.push(index);
@@ -211,6 +210,7 @@ function initializePanel() {
     }
 }
 
+// the html + css for the panel
 function makePanel(platform) {
     const checkImageUrl = chrome.runtime.getURL('assets/check.png');
     const xImageUrl = chrome.runtime.getURL('assets/x.png');
@@ -220,6 +220,7 @@ function makePanel(platform) {
     var width = '0px';
     var height = '0px';
 
+    // to give it time to load, and then itll move into position
     var top = '-5000px';
     var left = '-5000px';
 
@@ -292,7 +293,6 @@ function makePanel(platform) {
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
-            color: #333;
         ">
             ${displayText}
         </div>
@@ -347,6 +347,7 @@ function makePanel(platform) {
     return panel;
 }
 
+// added hover states
 function addTooltips(panel) {
     // Tooltip functionality
     const buttons = panel.querySelectorAll('.button');
@@ -387,11 +388,9 @@ function addTooltips(panel) {
     });
 }
 
-
 // Start the initialization when the document is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializePanel);
-
 } else {
     initializePanel();
 }

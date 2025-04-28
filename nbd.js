@@ -1,5 +1,5 @@
 // current add button, but will be replaced later
-function addButtonToSearchResults() {
+function addButton() {
     const searchResultsDiv = document.querySelector('.table-wrapper');
 
     if (searchResultsDiv) {
@@ -37,21 +37,16 @@ function onButtonClick() {
     console.log('Found links:', links);
 
     chrome.storage.local.get(["currentIndex", "profiles", "responses"], (data) => {
+        // reset list or if same list, pull last info
         const currentIndex = data.currentIndex || 0;
-        // If first time, create new list
-        if (!data.profiles) {
-            console.log('No existing profiles found, creating new list');
-            var responses = [];
-            var index = 0;
-        } else {
+        var index = 0;
+        var responses = [];
+        if (data.profiles) {
             const profiles = data.profiles.profiles;
             // if same list, use current index and saved responses
-            var index = 0;
             if (sameFive(profiles, links)) {
                 index = currentIndex;
                 var responses = data.responses || [];
-            } else {
-                var responses = [];
             }
         }
 
@@ -65,7 +60,7 @@ function onButtonClick() {
 
             chrome.storage.local.set({ 
                 currentIndex: index,
-                profiles: { profiles: links }, // Ensure profiles is properly structured
+                profiles: { profiles: links }, // Ensure profiles is properly structured- dont ask why its structured this way idk
                 responses: responses,
                 back: []
             });
@@ -127,6 +122,9 @@ function getLinks() {
         // cycle through each row, adding the link to a list
         body.forEach((row) => {
             // to be added: check if already in list
+            // const listsInfoDiv = row.querySelector('div.lists-info'); // Find the div with class .lists-info
+            // const isEmpty = listsInfoDiv && listsInfoDiv.classList.contains('empty'); // Check if it has the .empty class]
+
             var link = makeLink(row);
             // if (link && (isEmpty || !isChecked)) { -- old code for when we have smt to check if a profile is in a list
             if (link) {
@@ -134,7 +132,8 @@ function getLinks() {
             }
             // else {
             //     links.push('skip' + link);
-            // } -- old code for skip links
+            // }
+            // old code for skip links
         });
       });
     return links;
@@ -227,7 +226,6 @@ function injectExtension() {
         for (let node of labelDiv.childNodes) {
           if (node.nodeType === Node.TEXT_NODE || node.nodeType === 3) {
             if (node.textContent.trim() === "Select Faster") {
-              console.log("true");
               return;
             }
             node.textContent = ''; // clear any raw text nodes
@@ -248,12 +246,13 @@ function injectExtension() {
     }
   }  
 
-// polling for the button and the responses
-function checkForSearchResults() {
+// polling for the button and retriving the responses
+// not the best method but I couldn't get anything else to work
+function polling() {
     setInterval(() => {
-        addButtonToSearchResults(); // change to injectExtension() when new button
+        addButton(); // change to injectExtension() when new button
         retrieveResponses();
     }, 3000); // Check every 3 seconds
 }
 
-checkForSearchResults();
+polling();

@@ -165,12 +165,12 @@ function checkBoxes(whichBoxes) {
 }
 
 function manualClickedCheckboxes(checkboxes) {
-    for (var i = 0; i < checkboxes.length; i++) {
+    for (var i = 1; i < checkboxes.length; i++) {
         (function(index) {
             checkboxes[index].addEventListener("change", (event) => {
                 chrome.storage.local.get(["responses"], (data) => {
                     const responses = data.responses;
-                    responses[index] = event.target.checked;
+                    responses[index - 1] = event.target.checked;
                     chrome.storage.local.set({"responses": responses});
                 });
             });
