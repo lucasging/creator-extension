@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
     }
     // creator.co button (just closes the tab)
-    if (message.action === "closeTab" && sender.tab) {
+    if (request.action === "closeTab" && sender.tab) {
         chrome.tabs.remove(sender.tab.id);
     }
 });
