@@ -3,7 +3,7 @@
     "permissions": [
         "storage"
     ],
-    "version": "1.7",
+    "version": "1.8",
     "description": "Speeds up influencer recruitment for the Creator.co search tool.",
     "icons": {
         "16": "assets/creator16.png",
