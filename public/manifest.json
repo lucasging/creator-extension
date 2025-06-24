@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Creatorco Search Extension",
+  "version": "1.0.0",
+  "description": "React Application as a Chrome Extension",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "host_permissions": [
+    "*://*.creator.co/"
+  ],
+  "permissions": [
+    "cookies"
+  ]
+}
